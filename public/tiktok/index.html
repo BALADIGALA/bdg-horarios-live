@@ -965,7 +965,22 @@ function _pushToFirebase(){
   _db.ref(FB_PATH).set(payload)
     .then(() => { console.info("[Firebase] write OK, lastModified:", STATE.lastModified); })
     .catch(e => {
-      console.warn("[Firebase] write FAILED — datos solo en localStorage:", e);
+      // VISIBILIDAD: si Firebase rechaza, mostrar al usuario en lugar de fallar silencioso
+      console.error("[Firebase] write FAILED:", e);
+      try {
+        // Persistir último error para diagnóstico (visible en localStorage)
+        localStorage.setItem("bdg_last_fb_error", JSON.stringify({
+          ts: new Date().toISOString(),
+          code: e?.code || "unknown",
+          message: e?.message || String(e),
+          user: SESSION ? `${SESSION.role}:${SESSION.code}` : "no-session",
+        }));
+      } catch(_) {}
+      // Mostrar al usuario para que sepa que NO se guardó en la nube
+      const errMsg = e?.code === "PERMISSION_DENIED"
+        ? "⚠️ No se guardó en la nube: permisos bloqueados. Refresca la página y vuelve a iniciar sesión."
+        : `⚠️ No se guardó en la nube (${e?.code || "error de red"}). Tus cambios siguen en este dispositivo. Verifica tu conexión.`;
+      if(typeof showAlert === "function") showAlert(errMsg);
     })
     .finally(() => setTimeout(() => { _fbWriting = false; }, 3000));
 }
