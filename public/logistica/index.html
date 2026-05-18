@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logística — BDG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ──────────────────────────────────────────────────────────────── */
+:root {
+  --bg:      #0A0A0A;
+  --bg2:     #111111;
+  --bg3:     #1A1A1A;
+  --line:    #222222;
+  --text:    #F0F0F0;
+  --muted:   #888888;
+  --oxide:   #B8432A;
+  --red:     #F26B6B;
+  --yellow:  #F5C518;
+  --green:   #3ECF8E;
+  --fn:      'Jost', sans-serif;
+  --fv:      'EB Garamond', serif;
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--fn);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+
+/* ── Topbar ───────────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  height: 48px;
+}
+.topbar-logo {
+  font-family: var(--fv);
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.topbar-logo span { color: var(--oxide); }
+.topbar-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.topbar-spacer { flex: 1; }
+.topbar-ts {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.topbar-refresh {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--fn);
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.topbar-refresh:hover { color: var(--text); border-color: var(--text); }
+.topbar-refresh svg { width: 12px; height: 12px; }
+
+/* ── Page container ──────────────────────────────────────────────────────── */
+.page {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Hero chips ──────────────────────────────────────────────────────────── */
+.hero-chips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+@media(min-width: 600px) {
+  .hero-chips { grid-template-columns: repeat(4, 1fr); }
+}
+.hero-chip {
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  padding: 14px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hero-chip .chip-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hero-chip .chip-value {
+  font-family: var(--fv);
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 500;
+}
+.hero-chip .chip-sub {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.chip-total  .chip-value { color: var(--text); }
+.chip-critical .chip-value { color: var(--red); }
+.chip-warning  .chip-value { color: var(--yellow); }
+.chip-ok       .chip-value { color: var(--green); }
+
+/* Pulse si hay críticos */
+@keyframes pulse-red {
+  0%, 100% { border-color: var(--line); }
+  50%       { border-color: var(--red); }
+}
+.chip-critical.has-items {
+  animation: pulse-red 2s ease-in-out infinite;
+}
+
+/* ── Separador de sección ───────────────────────────────────────────────── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 0;
+}
+.section-divider .div-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.section-divider .div-line {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.div-critical { color: var(--red); }
+.div-warning  { color: var(--yellow); }
+.div-ok       { color: var(--green); }
+
+/* ── Orders grid ─────────────────────────────────────────────────────────── */
+.orders-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+@media(min-width: 900px) {
+  .orders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+
+/* ── Order card ──────────────────────────────────────────────────────────── */
+.order-card {
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s;
+}
+.order-card:hover { border-color: #333; }
+.order-card.critical { border-left: 2px solid var(--red); }
+.order-card.warning  { border-left: 2px solid var(--yellow); }
+.order-card.ok       { border-left: 2px solid var(--green); }
+
+.order-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.order-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.order-badge.critical { background: rgba(242,107,107,0.15); color: var(--red); }
+.order-badge.warning  { background: rgba(245,197,24,0.12);  color: var(--yellow); }
+.order-badge.ok       { background: rgba(62,207,142,0.12);  color: var(--green); }
+
+.order-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.order-date {
+  font-size: 11px;
+  color: var(--muted);
+}
+.order-shopify-link {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid var(--line);
+  padding: 3px 7px;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.order-shopify-link:hover { color: var(--text); border-color: #444; }
+.order-shopify-link svg { width: 10px; height: 10px; }
+
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.order-item {
+  font-size: 12px;
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.order-item .item-qty {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.order-item .item-title {
+  font-weight: 500;
+}
+.order-item .item-variant {
+  font-size: 11px;
+  color: var(--muted);
+}
+.order-items-more {
+  font-size: 11px;
+  color: var(--oxide);
+  cursor: pointer;
+  margin-top: 2px;
+  display: none;
+}
+.order-items-more.visible { display: block; }
+
+.order-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.order-customer {
+  font-size: 11px;
+  color: var(--muted);
+  flex: 1;
+}
+.order-total {
+  font-family: var(--fv);
+  font-size: 14px;
+  color: var(--text);
+}
+.order-source {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 2px 5px;
+  text-transform: uppercase;
+}
+.source-web     { color: var(--oxide); }
+.source-tiktok  { color: #FF3B5C; }
+.source-draft   { color: var(--yellow); }
+.source-other   { color: var(--muted); }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.empty-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  text-align: center;
+}
+.empty-state.visible { display: flex; }
+.empty-icon {
+  font-family: var(--fv);
+  font-size: 64px;
+  color: var(--green);
+  line-height: 1;
+}
+.empty-title {
+  font-family: var(--fv);
+  font-size: 28px;
+  color: var(--green);
+}
+.empty-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Loading skeleton ────────────────────────────────────────────────────── */
+.skeleton-card {
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  height: 80px;
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── Countdown bar ───────────────────────────────────────────────────────── */
+.countdown-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--line);
+  z-index: 200;
+}
+.countdown-fill {
+  height: 100%;
+  background: var(--oxide);
+  transition: width 1s linear;
+}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-logo">BDG<span>.</span></div>
+  <div class="topbar-label">Logística</div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-ts" id="tsLabel">—</div>
+  <button class="topbar-refresh" onclick="loadData(true)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2"/>
+      <polyline points="14,1 14,5 10,5"/>
+    </svg>
+    <span id="cdLabel">2:00</span>
+  </button>
+</header>
+
+<!-- Page -->
+<main class="page">
+
+  <!-- Hero chips -->
+  <div class="hero-chips">
+    <div class="hero-chip chip-total">
+      <div class="chip-label">Total pendientes</div>
+      <div class="chip-value" id="heroTotal">—</div>
+      <div class="chip-sub">paquetes por enviar</div>
+    </div>
+    <div class="hero-chip chip-critical" id="chipCritical">
+      <div class="chip-label">Críticos</div>
+      <div class="chip-value" id="heroCritical">—</div>
+      <div class="chip-sub">≥ 5 días sin enviar</div>
+    </div>
+    <div class="hero-chip chip-warning">
+      <div class="chip-label">En alerta</div>
+      <div class="chip-value" id="heroWarning">—</div>
+      <div class="chip-sub">2 – 4 días</div>
+    </div>
+    <div class="hero-chip chip-ok">
+      <div class="chip-label">Al día</div>
+      <div class="chip-value" id="heroOk">—</div>
+      <div class="chip-sub">0 – 1 día</div>
+    </div>
+  </div>
+
+  <!-- Order list rendered here -->
+  <div id="ordersList"></div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">✓</div>
+    <div class="empty-title">Sin pendientes</div>
+    <div class="empty-sub">Todos los paquetes han sido procesados.</div>
+  </div>
+
+</main>
+
+<!-- Countdown bar -->
+<div class="countdown-bar"><div class="countdown-fill" id="cdBar" style="width:100%"></div></div>
+
+<script>
+const API = '/api/fulfillment';
+const REFRESH_SEC = 120; // 2 min
+
+let _countdown = REFRESH_SEC;
+let _cdTimer = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function MXN(n) {
+  return '$' + Math.round(n).toLocaleString('es-MX');
+}
+
+function relTime(ms) {
+  const s = Math.floor((Date.now() - ms) / 1000);
+  if (s < 10)  return 'ahora mismo';
+  if (s < 60)  return `hace ${s}s`;
+  if (s < 120) return 'hace 1 min';
+  return `hace ${Math.floor(s / 60)} min`;
+}
+
+function daysLabel(d) {
+  if (d === 0) return 'hoy';
+  if (d === 1) return '1 día';
+  return `${d} días`;
+}
+
+function sourceClass(src) {
+  if (!src || src === 'web') return 'source-web';
+  if (src === 'tiktok')       return 'source-tiktok';
+  if (src === 'draft_order' || src === 'draft') return 'source-draft';
+  return 'source-other';
+}
+
+function sourceLabel(src) {
+  if (!src || src === 'web')  return 'Web';
+  if (src === 'tiktok')       return 'TikTok';
+  if (src === 'draft_order' || src === 'draft') return 'Draft';
+  return src;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function renderHero(summary) {
+  document.getElementById('heroTotal').textContent    = summary.total;
+  document.getElementById('heroCritical').textContent = summary.critical;
+  document.getElementById('heroWarning').textContent  = summary.warning;
+  document.getElementById('heroOk').textContent       = summary.ok;
+
+  const chipCrit = document.getElementById('chipCritical');
+  chipCrit.classList.toggle('has-items', summary.critical > 0);
+}
+
+function renderOrders(orders) {
+  const el = document.getElementById('ordersList');
+  const empty = document.getElementById('emptyState');
+
+  if (orders.length === 0) {
+    el.innerHTML = '';
+    empty.classList.add('visible');
+    return;
+  }
+  empty.classList.remove('visible');
+
+  const groups = [
+    { key: 'critical', label: `CRÍTICOS (≥ 5 días)`, cls: 'div-critical' },
+    { key: 'warning',  label: `EN ALERTA (2 – 4 días)`, cls: 'div-warning' },
+    { key: 'ok',       label: `AL DÍA (0 – 1 día)`, cls: 'div-ok' },
+  ];
+
+  let html = '';
+
+  for (const g of groups) {
+    const group = orders.filter(o => o.urgency === g.key);
+    if (group.length === 0) continue;
+
+    html += `
+      <div class="section-divider">
+        <span class="div-label ${g.cls}">${group.length} ${g.label}</span>
+        <span class="div-line"></span>
+      </div>
+      <div class="orders-grid">
+        ${group.map(orderCard).join('')}
+      </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+function orderCard(o) {
+  const SHOW = 3; // items to show before collapse
+  const hasMore = o.items.length > SHOW;
+  const visibleItems = o.items.slice(0, SHOW);
+  const hiddenItems  = o.items.slice(SHOW);
+
+  const itemHtml = (items) => items.map(it => `
+    <div class="order-item">
+      <span class="item-qty">${it.qty}×</span>
+      <span class="item-title">${it.title}</span>
+      ${it.variant ? `<span class="item-variant">— ${it.variant}</span>` : ''}
+    </div>`).join('');
+
+  const hiddenId = `hidden-${o.id}`;
+  const btnId    = `btn-${o.id}`;
+
+  return `
+    <div class="order-card ${o.urgency}">
+      <div class="order-header">
+        <span class="order-badge ${o.urgency}">${daysLabel(o.days_waiting)}</span>
+        <span class="order-num">#${o.order_number}</span>
+        <span class="order-date">· ${fmtDate(o.created_at)}</span>
+        <a class="order-shopify-link" href="${o.shopify_url}" target="_blank" rel="noopener">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"/>
+            <path d="M8 1h3v3M11 1 6 6"/>
+          </svg>
+          ver
+        </a>
+      </div>
+      <div class="order-items">
+        ${itemHtml(visibleItems)}
+        ${hasMore ? `
+          <div id="${hiddenId}" style="display:none">${itemHtml(hiddenItems)}</div>
+          <div class="order-items-more visible" id="${btnId}"
+               onclick="toggleItems('${hiddenId}','${btnId}')">
+            + ${hiddenItems.length} producto${hiddenItems.length > 1 ? 's' : ''} más
+          </div>` : ''}
+      </div>
+      <div class="order-footer">
+        <span class="order-customer">${o.customer}${o.city !== '—' ? ' · ' + o.city : ''}</span>
+        <span class="order-total">${MXN(o.total)}</span>
+        <span class="order-source ${sourceClass(o.source)}">${sourceLabel(o.source)}</span>
+      </div>
+    </div>`;
+}
+
+function toggleItems(hiddenId, btnId) {
+  const hidden = document.getElementById(hiddenId);
+  const btn    = document.getElementById(btnId);
+  const open   = hidden.style.display === 'none';
+  hidden.style.display = open ? '' : 'none';
+  if (!open) {
+    // Re-count hidden items from the wrapper children
+    const n = hidden.querySelectorAll('.order-item').length;
+    btn.textContent = `+ ${n} producto${n > 1 ? 's' : ''} más`;
+  } else {
+    btn.textContent = '▲ ocultar';
+  }
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  const mx = new Date(d.toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const day = String(mx.getDate()).padStart(2,'0');
+  const mon = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][mx.getMonth()];
+  const h   = String(mx.getHours()).padStart(2,'0');
+  const m   = String(mx.getMinutes()).padStart(2,'0');
+  return `${day} ${mon} ${h}:${m}`;
+}
+
+// ── Loading skeletons ─────────────────────────────────────────────────────
+function showSkeletons() {
+  const el = document.getElementById('ordersList');
+  el.innerHTML = `<div class="orders-grid">${Array(6).fill('<div class="skeleton-card"></div>').join('')}</div>`;
+}
+
+// ── Timestamp label ───────────────────────────────────────────────────────
+let _lastTs = null;
+function updateTsLabel() {
+  if (!_lastTs) return;
+  document.getElementById('tsLabel').textContent = relTime(_lastTs);
+}
+
+// ── Countdown ─────────────────────────────────────────────────────────────
+function startCountdown() {
+  clearInterval(_cdTimer);
+  _countdown = REFRESH_SEC;
+  _cdTimer = setInterval(() => {
+    _countdown--;
+    const pct = (_countdown / REFRESH_SEC) * 100;
+    document.getElementById('cdBar').style.width = pct + '%';
+    const m = String(Math.floor(_countdown / 60)).padStart(1,'0');
+    const s = String(_countdown % 60).padStart(2,'0');
+    document.getElementById('cdLabel').textContent = `${m}:${s}`;
+    updateTsLabel();
+    if (_countdown <= 0) loadData();
+  }, 1000);
+}
+
+// ── Fetch ─────────────────────────────────────────────────────────────────
+async function loadData(manual = false) {
+  if (manual) showSkeletons();
+
+  try {
+    const r = await fetch(API + '?_=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    _lastTs = data.ts;
+    renderHero(data.summary);
+    renderOrders(data.orders);
+    updateTsLabel();
+    startCountdown();
+  } catch (e) {
+    console.error('Fulfillment fetch error:', e);
+    document.getElementById('tsLabel').textContent = 'Error al cargar';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+showSkeletons();
+loadData();
+setInterval(updateTsLabel, 15000);
+</script>
+</body>
+</html>
