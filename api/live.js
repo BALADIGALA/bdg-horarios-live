@@ -86,10 +86,11 @@ async function fetchShopifyDay(mxToday, isToday = true) {
   const mxYesterday = new Date(new Date(mxToday).getTime() - 86400000)
     .toISOString().slice(0, 10);
 
-  const [todayOrders, yesterdayOrders, images] = await Promise.all([
+  const [todayOrders, yesterdayOrders, images, inventory] = await Promise.all([
     fetchDayOrders(mxToday),
     fetchDayOrders(mxYesterday),
     getProductImages(),
+    isToday ? fetchFluxInventory() : Promise.resolve([]),
   ]);
 
   // Current MX time — for "same hour" comparison (only relevant when viewing today)
@@ -158,14 +159,17 @@ async function fetchShopifyDay(mxToday, isToday = true) {
       };
     });
 
-  const gmv    = todayOrders.reduce((s, o) => s + parseFloat(o.total_price), 0);
-  const orders = todayOrders.length;
+  const gmv       = todayOrders.reduce((s, o) => s + parseFloat(o.total_price), 0);
+  const orders    = todayOrders.length;
+  const unitsSold = Object.values(byProduct).reduce((s, p) => s + p.units, 0);
 
   return {
     date:          mxToday,
     orders,
     gmv:           Math.round(gmv * 100) / 100,
     aov:           orders > 0 ? Math.round(gmv / orders * 100) / 100 : 0,
+    units_sold:    unitsSold,
+    inventory,
     top_products:  Object.values(byProduct).sort((a, b) => b.gmv - a.gmv).slice(0, 10),
     by_hour:       byHour,
     by_channel:    byChannel,
@@ -179,6 +183,40 @@ async function fetchShopifyDay(mxToday, isToday = true) {
       by_hour:         yesterdayByHour,
     },
   };
+}
+
+// ── Inventario FLUX por talla ─────────────────────────────────────────────────
+async function fetchFluxInventory() {
+  try {
+    const searchUrl = `https://${STORE}/admin/api/2024-01/products.json?title=FLUX&fields=id,title,variants&limit=10`;
+    const r = await shopifyFetch(searchUrl);
+    if (!r.ok) return [];
+    const data = await r.json();
+    const product = (data.products || []).find(p => p.title.toUpperCase().includes("FLUX"));
+    if (!product) return [];
+
+    const variants = product.variants || [];
+    const invIds   = variants.map(v => v.inventory_item_id).filter(Boolean).join(",");
+    if (!invIds) return [];
+
+    const invUrl = `https://${STORE}/admin/api/2024-01/inventory_levels.json?inventory_item_ids=${invIds}&limit=250`;
+    const invR   = await shopifyFetch(invUrl);
+    if (!invR.ok) return [];
+    const invData = await invR.json();
+
+    const qtyMap = {};
+    for (const lv of (invData.inventory_levels || [])) {
+      const id = lv.inventory_item_id;
+      qtyMap[id] = (qtyMap[id] || 0) + (lv.available || 0);
+    }
+
+    return variants
+      .filter(v => v.option1)
+      .map(v => ({ size: v.option1, quantity: Math.max(0, qtyMap[v.inventory_item_id] || 0) }))
+      .sort((a, b) => parseFloat(a.size) - parseFloat(b.size));
+  } catch {
+    return [];
+  }
 }
 
 // ── Meta Ads ──────────────────────────────────────────────────────────────────
