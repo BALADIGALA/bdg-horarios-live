@@ -119,11 +119,18 @@ async function fetchShopifyDay(mxToday, isToday = true) {
     const h   = oMX.getHours();
     const ch  = o.source_name || "web";
     const amt = parseFloat(o.total_price);
+    const isMits = (o.line_items || []).some(item => (item.title || "").toLowerCase().includes("mits"));
 
     if (!byHour[h])     byHour[h]     = { orders: 0, gmv: 0 };
-    if (!byChannel[ch]) byChannel[ch] = { orders: 0, gmv: 0 };
+    if (!byChannel[ch]) byChannel[ch] = {
+      orders: 0, gmv: 0,
+      mits:  { orders: 0, gmv: 0 },
+      other: { orders: 0, gmv: 0 },
+    };
     byHour[h].orders++;    byHour[h].gmv    += amt;
     byChannel[ch].orders++;byChannel[ch].gmv += amt;
+    const bucket = isMits ? byChannel[ch].mits : byChannel[ch].other;
+    bucket.orders++; bucket.gmv += amt;
 
     for (const item of (o.line_items || [])) {
       const k = item.title;
