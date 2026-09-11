@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" href="/favicon.ico"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>BDG · PENNY</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Jost:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#1e1e1e;--canvas:#2c2c2c;--panel:#252525;
+  --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.12);
+  --muted:rgba(255,255,255,.3);--sub:rgba(255,255,255,.5);
+  --text:#e8e4de;--white:#fff;
+  --terra:#c16452;--green:#4ea87a;--yellow:#d4a84b;--blue:#5b8fd4;
+  --fh:'Archivo',sans-serif;--fl:'Jost',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--fh);background:var(--bg);color:var(--text);}
+
+/* ── TOPBAR ─────────────────────────────────────────────────────── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:48px;z-index:300;
+  background:#111;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+  gap:12px;
+}
+.top-left{display:flex;align-items:center;gap:10px;}
+.top-logo{font-family:var(--fl);font-size:13px;font-weight:700;color:var(--white);letter-spacing:.14em;}
+.top-logo span{color:var(--terra);}
+.top-sep{width:1px;height:18px;background:var(--line2);}
+.top-title{font-size:11px;color:var(--sub);font-weight:500;}
+.top-right{display:flex;align-items:center;gap:8px;}
+.top-btn{padding:5px 13px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:all .12s;border:none;font-family:var(--fh);}
+.top-btn.ghost{background:rgba(255,255,255,.06);color:var(--sub);}
+.top-btn.ghost:hover{background:rgba(255,255,255,.1);color:var(--white);}
+.top-btn.primary{background:var(--terra);color:#fff;}
+.top-btn.primary:hover{opacity:.88;}
+.back-link{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .12s;}
+.back-link:hover{color:var(--white);}
+
+/* ── LEFT PANEL ─────────────────────────────────────────────────── */
+.left-panel{
+  position:fixed;top:48px;left:0;width:220px;bottom:0;z-index:200;
+  background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.panel-section{padding:12px 14px 8px;}
+.panel-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px;}
+.panel-stat{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);}
+.panel-stat:last-child{border-bottom:none;}
+.panel-stat-lbl{font-size:10px;color:var(--sub);}
+.panel-stat-val{font-size:12px;font-weight:800;color:var(--white);}
+
+/* Layer-like nav */
+.layers{flex:1;overflow-y:auto;padding:4px 0;}
+.layer-group{margin-bottom:2px;}
+.layer-group-head{
+  display:flex;align-items:center;gap:6px;padding:5px 14px;
+  font-size:10px;font-weight:700;color:var(--sub);cursor:pointer;
+  transition:background .1s;user-select:none;
+}
+.layer-group-head:hover{background:rgba(255,255,255,.04);}
+.layer-group-head.active{color:var(--white);}
+.layer-arrow{font-size:8px;transition:transform .15s;}
+.layer-group-head.open .layer-arrow{transform:rotate(90deg);}
+.layer-items{display:none;padding:2px 0;}
+.layer-group.open .layer-items{display:block;}
+.layer-item{
+  padding:4px 14px 4px 28px;font-size:10px;color:var(--muted);
+  cursor:pointer;transition:all .1s;display:flex;align-items:center;gap:6px;
+}
+.layer-item:hover{background:rgba(255,255,255,.04);color:var(--sub);}
+.layer-item.active-item{background:rgba(193,100,82,.12);color:var(--terra);}
+.ldot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.ldot-planeado  {background:rgba(255,255,255,.25);}
+.ldot-confirmado{background:var(--yellow);}
+.ldot-produccion{background:var(--terra);}
+.ldot-lanzado   {background:var(--green);}
+.ldot-cancelado {background:rgba(255,255,255,.1);}
+
+.panel-add{
+  margin:8px 10px 12px;padding:7px;background:rgba(255,255,255,.05);
+  border:1px dashed rgba(255,255,255,.1);border-radius:5px;
+  font-size:10px;color:var(--muted);text-align:center;cursor:pointer;
+  transition:all .12s;font-weight:700;
+}
+.panel-add:hover{background:rgba(255,255,255,.08);color:var(--sub);}
+
+/* ── CANVAS ─────────────────────────────────────────────────────── */
+.canvas-wrap{
+  position:fixed;top:48px;left:220px;right:0;bottom:32px;
+  overflow:auto;background:var(--canvas);
+  background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+.canvas{
+  min-width:2400px;min-height:1600px;
+  position:relative;padding:60px;
+}
+
+/* ── FRAME ───────────────────────────────────────────────────────── */
+.frame{
+  position:absolute;
+  background:var(--panel);border-radius:3px;
+  border:1px solid var(--line);
+}
+.frame-label{
+  position:absolute;top:-22px;left:0;
+  font-size:10px;font-weight:700;color:var(--muted);
+  letter-spacing:.06em;white-space:nowrap;
+}
+
+/* Colorways frame */
+#frameColorways{top:60px;left:60px;width:860px;min-height:300px;}
+/* Moodboard frame */
+#frameMood{top:60px;left:960px;width:680px;min-height:640px;}
+/* Colors to launch frame */
+#frameLanzar{top:420px;left:60px;width:860px;min-height:320px;}
+
+/* COLORWAYS GRID inside frame */
+.frame-inner{padding:16px;}
+.existing-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.ex-card{
+  width:110px;background:rgba(255,255,255,.04);border-radius:6px;
+  border:1px solid var(--line);overflow:hidden;cursor:default;
+  transition:border-color .12s;flex-shrink:0;
+}
+.ex-card:hover{border-color:rgba(255,255,255,.2);}
+.ex-img{aspect-ratio:1;overflow:hidden;background:#333;}
+.ex-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block;}
+.ex-card:hover .ex-img img{transform:scale(1.06);}
+.ex-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.ex-body{padding:7px 8px 9px;}
+.ex-name{font-size:9px;font-weight:800;color:var(--white);line-height:1.2;margin-bottom:3px;}
+.ex-sold{font-size:8px;color:var(--terra);font-weight:700;}
+.ex-stock-lbl{font-size:8px;color:var(--muted);}
+
+/* MOODBOARD inside frame */
+.mood-grid{columns:3 140px;gap:8px;}
+.mood-item{
+  break-inside:avoid;margin-bottom:8px;border-radius:5px;
+  overflow:hidden;border:1px solid var(--line);background:rgba(255,255,255,.03);
+  cursor:pointer;transition:all .15s;position:relative;
+}
+.mood-item:hover{border-color:rgba(255,255,255,.25);transform:scale(1.01);}
+.mood-item img{width:100%;display:block;}
+.mood-item-bar{padding:5px 8px 7px;display:flex;align-items:center;justify-content:space-between;}
+.mood-item-title{font-size:9px;font-weight:700;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
+.mood-item-del{color:var(--muted);font-size:9px;cursor:pointer;opacity:0;transition:opacity .1s;padding:1px 3px;}
+.mood-item:hover .mood-item-del{opacity:1;}
+.mood-item-del:hover{color:var(--terra);}
+.color-tag{
+  position:absolute;top:6px;left:6px;
+  background:rgba(0,0,0,.6);color:#fff;
+  font-size:7px;font-family:var(--fh);font-weight:700;
+  letter-spacing:.1em;padding:2px 5px;border-radius:2px;text-transform:uppercase;
+}
+.mood-ph{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;}
+
+/* ADD TILE in moodboard */
+.mood-add-tile{
+  break-inside:avoid;margin-bottom:8px;border-radius:5px;
+  border:1px dashed rgba(255,255,255,.1);background:rgba(255,255,255,.02);
+  aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;transition:all .12s;gap:6px;
+}
+.mood-add-tile:hover{border-color:rgba(193,100,82,.5);background:rgba(193,100,82,.05);}
+.mood-add-tile span{font-size:9px;color:var(--muted);font-weight:700;}
+
+/* COLORES A LANZAR inside frame */
+.lanzar-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.color-card{
+  width:160px;background:rgba(255,255,255,.04);border-radius:6px;
+  border:1px solid var(--line);overflow:hidden;flex-shrink:0;
+  transition:border-color .12s;
+}
+.color-card:hover{border-color:rgba(255,255,255,.2);}
+.color-swatch{height:60px;position:relative;}
+.color-swatch img{width:100%;height:100%;object-fit:cover;display:block;}
+.color-swatch-ph{width:100%;height:100%;}
+.color-status-badge{
+  position:absolute;top:6px;right:6px;
+  font-size:7px;letter-spacing:.1em;text-transform:uppercase;
+  font-family:var(--fh);font-weight:700;padding:2px 6px;border-radius:2px;
+}
+.cs-planeado   {background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);}
+.cs-confirmado {background:#d4a84b;color:#111;}
+.cs-produccion {background:var(--terra);color:#fff;}
+.cs-lanzado    {background:var(--green);color:#fff;}
+.cs-cancelado  {background:rgba(255,255,255,.08);color:var(--muted);}
+.color-body{padding:9px 10px 11px;}
+.color-name{font-size:11px;font-weight:900;color:var(--white);margin-bottom:2px;line-height:1.2;}
+.color-hex{font-size:8px;color:var(--muted);margin-bottom:5px;}
+.color-notes{font-size:9px;color:var(--sub);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.color-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:7px;padding-top:6px;border-top:1px solid var(--line);}
+.color-btn{font-size:8px;color:var(--muted);cursor:pointer;font-weight:700;transition:color .1s;}
+.color-btn:hover{color:var(--terra);}
+
+/* ADD CARD */
+.add-card{
+  width:160px;height:auto;min-height:130px;
+  background:rgba(255,255,255,.02);border-radius:6px;
+  border:1px dashed rgba(255,255,255,.1);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .12s;gap:6px;flex-shrink:0;
+}
+.add-card:hover{border-color:rgba(193,100,82,.5);background:rgba(193,100,82,.05);}
+.add-card span{font-size:9px;color:var(--muted);font-weight:700;}
+
+/* SK */
+.sk{background:linear-gradient(90deg,#333 25%,#3a3a3a 50%,#333 75%);background-size:200% 100%;animation:shimmer 1.3s infinite;border-radius:4px;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── STATUSBAR ───────────────────────────────────────────────────── */
+.statusbar{
+  position:fixed;bottom:0;left:0;right:0;height:32px;z-index:300;
+  background:#111;border-top:1px solid var(--line);
+  display:flex;align-items:center;padding:0 16px;gap:20px;
+}
+.sb-item{font-size:9px;color:var(--muted);letter-spacing:.1em;}
+.sb-item strong{color:var(--sub);}
+
+/* ── MODAL ───────────────────────────────────────────────────────── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px;}
+.ov.show{display:flex;}
+.modal{background:#1a1a1a;border:1px solid var(--line2);border-radius:10px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.6);}
+.mhead{padding:16px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.mtitle{font-size:13px;font-weight:800;color:var(--white);}
+.mclose{color:var(--muted);font-size:20px;cursor:pointer;line-height:1;transition:color .1s;}
+.mclose:hover{color:var(--white);}
+.mbody{padding:16px 20px 20px;display:flex;flex-direction:column;gap:12px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fl{font-size:8px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--muted);}
+.fi,.fs,.ft{
+  padding:8px 10px;border:1px solid rgba(255,255,255,.1);border-radius:5px;
+  font-family:var(--fh);font-size:12px;color:var(--white);
+  background:rgba(255,255,255,.05);outline:none;transition:border-color .1s;width:100%;
+}
+.fi:focus,.fs:focus,.ft:focus{border-color:var(--terra);}
+.fs option{background:#1a1a1a;}
+.ft{min-height:60px;resize:vertical;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.drop-zone{
+  border:1px dashed rgba(255,255,255,.15);border-radius:5px;padding:18px;
+  text-align:center;cursor:pointer;transition:all .12s;background:rgba(255,255,255,.03);
+}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--terra);background:rgba(193,100,82,.07);}
+.drop-lbl{font-size:10px;color:var(--muted);margin-top:5px;}
+.drop-lbl span{color:var(--terra);font-weight:700;}
+.prev-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.prev-item{position:relative;width:60px;height:60px;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.1);}
+.prev-item img{width:100%;height:100%;object-fit:cover;}
+.prev-del{position:absolute;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;color:#fff;font-size:14px;cursor:pointer;}
+.prev-item:hover .prev-del{display:flex;}
+.mfooter{display:flex;gap:8px;justify-content:flex-end;padding-top:4px;}
+.bcancel{padding:7px 14px;border:1px solid rgba(255,255,255,.1);border-radius:4px;background:transparent;font-family:var(--fh);font-size:10px;font-weight:700;cursor:pointer;color:var(--muted);}
+.bsave{padding:7px 16px;background:var(--terra);color:#fff;border:none;border-radius:4px;font-family:var(--fh);font-size:10px;font-weight:700;cursor:pointer;transition:opacity .1s;}
+.bsave:hover{opacity:.85;}.bsave:disabled{opacity:.4;cursor:default;}
+
+/* ── LIGHTBOX ────────────────────────────────────────────────────── */
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:600;display:none;align-items:center;justify-content:center;}
+.lb.show{display:flex;}
+.lb img{max-width:90vw;max-height:86vh;object-fit:contain;border-radius:3px;}
+.lb-close{position:absolute;top:14px;right:18px;color:rgba(255,255,255,.3);font-size:26px;cursor:pointer;transition:color .1s;}
+.lb-close:hover{color:#fff;}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.25);font-size:34px;cursor:pointer;transition:color .1s;padding:8px;user-select:none;}
+.lb-nav:hover{color:#fff;}
+.lb-nav.prev{left:10px;}.lb-nav.next{right:10px;}
+
+/* ── CHIP FILTER ─────────────────────────────────────────────────── */
+.chip-bar{display:flex;gap:5px;flex-wrap:wrap;padding:0 16px 12px;}
+.chip{padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:transparent;font-size:9px;font-weight:700;cursor:pointer;transition:all .12s;color:var(--muted);font-family:var(--fh);white-space:nowrap;}
+.chip.active,.chip:hover{background:var(--terra);color:#fff;border-color:var(--terra);}
+
+/* frame section title */
+.frame-section-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 16px 8px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.frame-section-title span{color:var(--sub);}
+
+/* zoom controls */
+.zoom-ctrl{position:fixed;bottom:42px;right:14px;z-index:310;display:flex;gap:4px;}
+.zoom-btn{width:26px;height:26px;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:4px;color:var(--sub);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;}
+.zoom-btn:hover{background:rgba(255,255,255,.12);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="top-left">
+    <div class="top-logo">BDG<span>·</span>HQ</div>
+    <div class="top-sep"></div>
+    <div class="top-title">PENNY — Tablero de colores</div>
+  </div>
+  <div class="top-right">
+    <a class="back-link" href="/diseno/">← Diseño</a>
+    <button class="top-btn ghost" onclick="openMoodModal()">+ Referencia</button>
+    <button class="top-btn primary" onclick="openColorModal()">+ Color</button>
+  </div>
+</div>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <div class="panel-section">
+    <div class="panel-label">Modelo</div>
+    <div class="panel-stat"><div class="panel-stat-lbl">Colorways</div><div class="panel-stat-val" id="statColorways">—</div></div>
+    <div class="panel-stat"><div class="panel-stat-lbl">Stock total</div><div class="panel-stat-val" id="statStock">—</div></div>
+    <div class="panel-stat"><div class="panel-stat-lbl">Pares vendidos</div><div class="panel-stat-val" id="statSold">—</div></div>
+  </div>
+
+  <div class="panel-section" style="border-top:1px solid var(--line);">
+    <div class="panel-label">Frames</div>
+  </div>
+
+  <div class="layers" id="layersList">
+    <div class="layer-group open" id="lgColorways">
+      <div class="layer-group-head open" onclick="toggleLayer('lgColorways')">
+        <span class="layer-arrow">▶</span> Colorways actuales
+      </div>
+      <div class="layer-items" id="layerColorways"></div>
+    </div>
+    <div class="layer-group open" id="lgMood">
+      <div class="layer-group-head open" onclick="toggleLayer('lgMood')">
+        <span class="layer-arrow">▶</span> Moodboard
+      </div>
+      <div class="layer-items" id="layerMood"></div>
+    </div>
+    <div class="layer-group open" id="lgLanzar">
+      <div class="layer-group-head open" onclick="toggleLayer('lgLanzar')">
+        <span class="layer-arrow">▶</span> Colores a lanzar
+      </div>
+      <div class="layer-items" id="layerLanzar"></div>
+    </div>
+  </div>
+
+  <div class="panel-add" onclick="openColorModal()">+ Nuevo color</div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas-wrap" id="canvasWrap">
+<div class="canvas" id="canvas" style="transform-origin:top left;">
+
+  <!-- FRAME: Colorways -->
+  <div class="frame" id="frameColorways">
+    <div class="frame-label">Colorways actuales</div>
+    <div class="frame-section-title">
+      PENNY · <span id="countColorways">Cargando…</span>
+      <span id="sortLabel" style="cursor:pointer;font-size:8px;" onclick="toggleSort()">↓ Más vendidos</span>
+    </div>
+    <div class="frame-inner">
+      <div class="existing-grid" id="gridExisting">
+        <div class="sk" style="width:100%;height:120px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRAME: Moodboard -->
+  <div class="frame" id="frameMood">
+    <div class="frame-label">Moodboard · Nuevos colores</div>
+    <div class="frame-section-title">
+      REFERENCIAS · <span id="countMood">—</span>
+    </div>
+    <div class="chip-bar" id="moodChips"></div>
+    <div class="frame-inner" style="padding-top:0;">
+      <div class="mood-grid" id="gridMood">
+        <div class="sk" style="height:160px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRAME: Colores a lanzar -->
+  <div class="frame" id="frameLanzar">
+    <div class="frame-label">Colores a lanzar</div>
+    <div class="frame-section-title">
+      PLANNING · <span id="countLanzar">—</span>
+    </div>
+    <div class="frame-inner">
+      <div class="lanzar-grid" id="gridLanzar">
+        <div class="sk" style="width:100%;height:100px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ZOOM CONTROLS -->
+<div class="zoom-ctrl">
+  <div class="zoom-btn" onclick="zoom(1)" title="Acercar">+</div>
+  <div class="zoom-btn" onclick="zoom(-1)" title="Alejar">−</div>
+  <div class="zoom-btn" onclick="resetZoom()" title="Reset" style="font-size:10px;font-weight:700;">1:1</div>
+</div>
+
+<!-- STATUSBAR -->
+<div class="statusbar">
+  <div class="sb-item">BDG · PENNY Tablero</div>
+  <div class="sb-item" id="sbCount">—</div>
+  <div class="sb-item" style="margin-left:auto;"><strong id="sbCache"></strong></div>
+</div>
+
+<!-- MODAL -->
+<div class="ov" id="ov" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mhead">
+      <div class="mtitle" id="mtitle">Agregar</div>
+      <span class="mclose" onclick="closeModal()">×</span>
+    </div>
+    <div class="mbody" id="mbody"></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" onclick="if(event.target===this)closeLb()">
+  <span class="lb-close" onclick="closeLb()">×</span>
+  <span class="lb-nav prev" onclick="lbNav(-1)">‹</span>
+  <img id="lbImg" src="" alt=""/>
+  <span class="lb-nav next" onclick="lbNav(1)">›</span>
+</div>
+
+<script>
+const FB = 'https://bdg-horarios-default-rtdb.firebaseio.com/bdg_horarios_v2/penny';
+let _mood = [], _colors = [], _penny = [];
+let _editing = null, _modalType = 'mood', _pendingImgs = [];
+let _moodFilter = 'todos', _sortSold = true;
+let _lbImgs = [], _lbIdx = 0;
+let _scale = 1;
+const STATUS_COLOR = ['Planeado','Confirmado','Producción','Lanzado','Cancelado'];
+
+// ── ZOOM ──────────────────────────────────────────────────────────────────────
+function zoom(dir){ _scale = Math.min(2, Math.max(0.3, _scale + dir * 0.1)); applyZoom(); }
+function resetZoom(){ _scale = 1; applyZoom(); }
+function applyZoom(){ document.getElementById('canvas').style.transform = `scale(${_scale})`; }
+
+// ── LAYER TOGGLE ──────────────────────────────────────────────────────────────
+function toggleLayer(id){
+  const g = document.getElementById(id);
+  g.classList.toggle('open');
+  g.querySelector('.layer-group-head').classList.toggle('open');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init(){
+  try {
+    const res  = await fetch(`${FB}.json`);
+    const data = await res.json();
+    _mood = []; _colors = [];
+    if(data) for(const [id,item] of Object.entries(data)){
+      if(!item?.type) continue;
+      if(item.type==='mood')  _mood.push({id,...item});
+      if(item.type==='color') _colors.push({id,...item});
+    }
+    _mood.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    _colors.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  } catch(e){ console.error(e); }
+  renderMood();
+  renderLanzar();
+  updateStatusbar();
+}
+
+// ── SHOPIFY PENNY ─────────────────────────────────────────────────────────────
+async function loadShopify(){
+  try {
+    const res  = await fetch('/api/shopify?mode=products');
+    const data = await res.json();
+    _penny = (data.products||[]).filter(p=>p.title.toUpperCase().includes('PENNY'));
+    document.getElementById('sbCache').textContent = data.sales_period ? `Ventas: ${data.sales_period}` : '';
+    renderPenny();
+  } catch(e){ console.error(e); }
+}
+
+function toggleSort(){ _sortSold=!_sortSold; renderPenny(); }
+
+function renderPenny(){
+  const list = [..._penny].sort((a,b)=>_sortSold?(b.units_sold||0)-(a.units_sold||0):a.title.localeCompare(b.title));
+  const totalStock = list.reduce((s,p)=>(p.variants||[]).reduce((ss,v)=>ss+Math.max(0,v.inventory_quantity||0),s),0);
+  const totalSold  = list.reduce((s,p)=>s+(p.units_sold||0),0);
+
+  document.getElementById('statColorways').textContent = list.length;
+  document.getElementById('statStock').textContent = totalStock.toLocaleString();
+  document.getElementById('statSold').textContent  = totalSold.toLocaleString();
+  document.getElementById('countColorways').textContent = `${list.length} colorways`;
+  document.getElementById('sortLabel').textContent = _sortSold ? '↓ Más vendidos' : 'A–Z';
+
+  // Layer panel
+  document.getElementById('layerColorways').innerHTML = list.slice(0,8).map(p=>
+    `<div class="layer-item"><div class="ldot" style="background:rgba(255,255,255,.15);"></div>${p.title.replace(/^PENNY\s*/i,'').slice(0,22)}</div>`
+  ).join('');
+
+  document.getElementById('gridExisting').innerHTML = list.map(p=>{
+    const img   = p.images?.[0]?.src;
+    const vars  = p.variants||[];
+    const stock = vars.reduce((s,v)=>s+Math.max(0,v.inventory_quantity||0),0);
+    const name  = p.title.replace(/^PENNY\s*/i,'').trim() || p.title;
+    return `<div class="ex-card">
+      <div class="ex-img">${img?`<img src="${img}" loading="lazy" alt=""/>`:`<div class="ex-img-ph"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".15"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>`}</div>
+      <div class="ex-body">
+        <div class="ex-name">${name}</div>
+        ${p.units_sold?`<div class="ex-sold">${p.units_sold} vendidos</div>`:''}
+        <div class="ex-stock-lbl">${stock} uds</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── MOODBOARD ─────────────────────────────────────────────────────────────────
+function renderMood(){
+  const groups = [...new Set(_mood.map(m=>m.colorName||'General'))];
+  const list   = _moodFilter==='todos' ? _mood : _mood.filter(m=>(m.colorName||'General')===_moodFilter);
+
+  document.getElementById('countMood').textContent = `${_mood.length} imagen${_mood.length!==1?'es':''}`;
+
+  // Chips
+  document.getElementById('moodChips').innerHTML =
+    `<button class="chip${_moodFilter==='todos'?' active':''}" onclick="setMoodFilter('todos',this)">Todos</button>`
+    + groups.map(g=>`<button class="chip${_moodFilter===g?' active':''}" onclick="setMoodFilter('${g.replace(/'/g,"\\'")}',this)">${g}</button>`).join('');
+
+  // Layer panel
+  document.getElementById('layerMood').innerHTML = groups.map(g=>{
+    const cnt = _mood.filter(m=>(m.colorName||'General')===g).length;
+    return `<div class="layer-item" onclick="setMoodFilter('${g}',null)"><div class="ldot" style="background:var(--terra);opacity:.6;"></div>${g} <span style="margin-left:auto;opacity:.4;">${cnt}</span></div>`;
+  }).join('');
+
+  const el = document.getElementById('gridMood');
+  el.innerHTML = list.map(item=>{
+    const img = item.images?.[0];
+    return `<div class="mood-item" onclick="openLb('${item.id}')">
+      ${img?`<img src="${img}" loading="lazy" alt=""/>`:`<div class="mood-ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".15"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>`}
+      ${item.colorName?`<div class="color-tag">${item.colorName}</div>`:''}
+      <div class="mood-item-bar">
+        <div class="mood-item-title">${item.title||item.colorName||''}</div>
+        <div class="mood-item-del" onclick="event.stopPropagation();delItem('${item.id}')">✕</div>
+      </div>
+    </div>`;
+  }).join('')
+  + `<div class="mood-add-tile" onclick="openMoodModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>Agregar</span>
+    </div>`;
+
+  updateStatusbar();
+}
+
+function setMoodFilter(f, btn){
+  _moodFilter = f;
+  document.querySelectorAll('#moodChips .chip').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else document.querySelector(`#moodChips .chip[onclick*="${f}"]`)?.classList.add('active');
+  renderMood();
+}
+
+// ── COLORES A LANZAR ──────────────────────────────────────────────────────────
+function renderLanzar(){
+  document.getElementById('countLanzar').textContent = `${_colors.length} color${_colors.length!==1?'es':''}`;
+
+  document.getElementById('layerLanzar').innerHTML = _colors.map(c=>{
+    const sk = (c.status||'planeado').toLowerCase().replace(/[^a-z]/g,'');
+    return `<div class="layer-item"><div class="ldot ldot-${sk}"></div>${(c.title||'—').slice(0,20)}</div>`;
+  }).join('');
+
+  const el = document.getElementById('gridLanzar');
+  el.innerHTML = _colors.map(c=>{
+    const img = c.images?.[0];
+    const sk  = (c.status||'planeado').toLowerCase().replace(/[^a-z]/g,'');
+    return `<div class="color-card">
+      <div class="color-swatch" style="${!img&&c.hex?'background:'+c.hex:'background:#333'}">
+        ${img?`<img src="${img}" alt=""/>`:c.hex?`<div class="color-swatch-ph" style="background:${c.hex};"></div>`:`<div class="color-swatch-ph"></div>`}
+        <div class="color-status-badge cs-${sk}">${c.status||'Planeado'}</div>
+      </div>
+      <div class="color-body">
+        <div class="color-name">${c.title||'Sin nombre'}</div>
+        ${c.hex?`<div class="color-hex">${c.hex}</div>`:''}
+        ${c.notes?`<div class="color-notes">${c.notes}</div>`:''}
+        <div class="color-foot">
+          <span class="color-btn" onclick="editItem('${c.id}','color')">Editar</span>
+          <span class="color-btn" onclick="delItem('${c.id}')">✕</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('')
+  + `<div class="add-card" onclick="openColorModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>Nuevo color</span>
+    </div>`;
+
+  updateStatusbar();
+}
+
+function updateStatusbar(){
+  document.getElementById('sbCount').textContent = `${_mood.length} refs · ${_colors.length} colores planificados`;
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openMoodModal(){ _modalType='mood'; _editing=null; _pendingImgs=[]; buildModal(); document.getElementById('ov').classList.add('show'); }
+function openColorModal(){ _modalType='color'; _editing=null; _pendingImgs=[]; buildModal(); document.getElementById('ov').classList.add('show'); }
+function editItem(id, type){
+  _modalType=type;
+  _editing=(_modalType==='mood'?_mood:_colors).find(i=>i.id===id);
+  _pendingImgs=[...(_editing?.images||[])];
+  buildModal(); document.getElementById('ov').classList.add('show');
+}
+function closeModal(){ document.getElementById('ov').classList.remove('show'); _editing=null; _pendingImgs=[]; }
+
+function buildModal(){
+  const e = _editing;
+  document.getElementById('mtitle').textContent = (e?'Editar ':'Nueva ')+(_modalType==='mood'?'referencia':'color');
+  let fields='';
+  if(_modalType==='mood'){
+    fields=`
+      <div class="fg"><div class="fl">Color / grupo</div><input class="fi" id="fColor" value="${e?.colorName||''}" placeholder="Terracota, Sage, Midnight…"/></div>
+      <div class="fg"><div class="fl">Descripción</div><input class="fi" id="fTitle" value="${e?.title||''}" placeholder="Textura, acabado, referencia…"/></div>`;
+  } else {
+    fields=`
+      <div class="frow">
+        <div class="fg"><div class="fl">Nombre del color</div><input class="fi" id="fTitle" value="${e?.title||''}" placeholder="Terracota"/></div>
+        <div class="fg"><div class="fl">HEX</div><input class="fi" id="fHex" value="${e?.hex||''}" placeholder="#C16452"/></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><div class="fl">Estado</div><select class="fs" id="fStatus">${STATUS_COLOR.map(s=>`<option${e?.status===s?' selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="fg"><div class="fl">Temporada</div><input class="fi" id="fTemporada" value="${e?.temporada||''}" placeholder="OI2026"/></div>
+      </div>
+      <div class="fg"><div class="fl">Notas</div><textarea class="ft" id="fNotes" placeholder="Material, proveedor, detalles…">${e?.notes||''}</textarea></div>`;
+  }
+  document.getElementById('mbody').innerHTML=`
+    ${fields}
+    <div class="fg">
+      <div class="fl">Imágenes</div>
+      <div class="drop-zone" id="dz" onclick="document.getElementById('fi').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto;opacity:.2;display:block;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+        <div class="drop-lbl">Arrastra o <span>selecciona</span></div>
+      </div>
+      <input id="fi" type="file" multiple accept="image/*" style="display:none" onchange="addFiles(this.files)"/>
+      <div class="prev-grid" id="pg">${previews()}</div>
+    </div>
+    <div class="mfooter">
+      <button class="bcancel" onclick="closeModal()">Cancelar</button>
+      <button class="bsave" id="sb" onclick="save()">Guardar</button>
+    </div>`;
+}
+
+function previews(){ return _pendingImgs.map((u,i)=>`<div class="prev-item"><img src="${u}"/><div class="prev-del" onclick="rmImg(${i})">✕</div></div>`).join(''); }
+function rmImg(i){ _pendingImgs.splice(i,1); document.getElementById('pg').innerHTML=previews(); }
+function handleDrop(e){ e.preventDefault(); document.getElementById('dz').classList.remove('drag'); addFiles(e.dataTransfer.files); }
+function addFiles(files){ [...files].forEach(f=>{ if(!f.type.startsWith('image/')) return; const r=new FileReader(); r.onload=ev=>{ const img=new Image(); img.onload=()=>{ const M=1200; let w=img.width,h=img.height; if(w>M){h=h*M/w;w=M;} if(h>M){w=w*M/h;h=M;} const c=document.createElement('canvas'); c.width=Math.round(w); c.height=Math.round(h); c.getContext('2d').drawImage(img,0,0,c.width,c.height); _pendingImgs.push(c.toDataURL('image/jpeg',.8)); document.getElementById('pg').innerHTML=previews(); }; img.src=ev.target.result; }; r.readAsDataURL(f); }); }
+
+async function save(){
+  const sb=document.getElementById('sb'); sb.disabled=true; sb.textContent='Guardando…';
+  const id=_editing?.id||(Date.now().toString(36)+Math.random().toString(36).slice(2,5));
+  const base={type:_modalType,fecha:new Date().toISOString().slice(0,10),images:_pendingImgs,title:(document.getElementById('fTitle')?.value||'').trim()};
+  if(_modalType==='mood') base.colorName=(document.getElementById('fColor')?.value||'').trim()||'General';
+  else { base.hex=(document.getElementById('fHex')?.value||'').trim(); base.status=document.getElementById('fStatus')?.value||'Planeado'; base.temporada=(document.getElementById('fTemporada')?.value||'').trim(); base.notes=(document.getElementById('fNotes')?.value||'').trim(); }
+  await fetch(`${FB}/${id}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(base)});
+  closeModal(); await init();
+}
+
+async function delItem(id){ if(!confirm('¿Eliminar?')) return; await fetch(`${FB}/${id}.json`,{method:'DELETE'}); await init(); }
+
+// ── LIGHTBOX ──────────────────────────────────────────────────────────────────
+function openLb(id){ const item=_mood.find(i=>i.id===id)||_colors.find(i=>i.id===id); if(!item?.images?.length) return; _lbImgs=item.images; _lbIdx=0; document.getElementById('lbImg').src=_lbImgs[0]; document.getElementById('lb').classList.add('show'); }
+function closeLb(){ document.getElementById('lb').classList.remove('show'); }
+function lbNav(d){ _lbIdx=(_lbIdx+d+_lbImgs.length)%_lbImgs.length; document.getElementById('lbImg').src=_lbImgs[_lbIdx]; }
+document.addEventListener('keydown',e=>{ const lb=document.getElementById('lb'); if(!lb.classList.contains('show')) return; if(e.key==='Escape') closeLb(); if(e.key==='ArrowRight') lbNav(1); if(e.key==='ArrowLeft') lbNav(-1); });
+
+// Keyboard zoom
+document.addEventListener('keydown',e=>{ if(e.metaKey||e.ctrlKey){ if(e.key==='='||e.key==='+'){e.preventDefault();zoom(1);} if(e.key==='-'){e.preventDefault();zoom(-1);} if(e.key==='0'){e.preventDefault();resetZoom();} } });
+
+init();
+loadShopify();
+</script>
+</body>
+</html>

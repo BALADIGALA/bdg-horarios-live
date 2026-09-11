@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" href="/favicon.ico"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>BDG · OC y Curvas</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;900&family=Jost:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#090909;--surface:#0f0f0f;--card:#141414;--card2:#181818;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --muted:rgba(255,255,255,.22);--sub:rgba(255,255,255,.45);--text:#e8e4de;
+  --terra:#c16452;--green:#3ecf8e;--yellow:#f5c842;--blue:#5b9cf6;--red:#f26b6b;
+  --fh:'Archivo',sans-serif;--fl:'Jost',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fh);}
+body{display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{height:48px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;}
+.logo{font-family:var(--fl);font-size:13px;font-weight:700;color:#fff;letter-spacing:.16em;}
+.logo span{color:var(--terra);}
+.back{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .12s;}
+.back:hover{color:#fff;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.tab{padding:0 28px;height:40px;display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .14s;user-select:none;}
+.tab:hover{color:var(--sub);}
+.tab.active{color:#fff;border-bottom-color:var(--terra);}
+.tab-count{font-size:8px;background:rgba(255,255,255,.08);padding:2px 7px;border-radius:10px;font-weight:700;color:var(--muted);}
+.tab.active .tab-count{background:rgba(193,100,82,.18);color:var(--terra);}
+
+/* MAIN */
+.main{flex:1;display:flex;min-height:0;}
+
+/* ── PANEL IZQUIERDO (lista) ── */
+.list-panel{width:420px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;}
+.panel-toolbar{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.search-wrap{flex:1;position:relative;}
+.search-wrap input{width:100%;background:#111;border:1px solid var(--border);border-radius:5px;padding:7px 12px 7px 30px;font-family:var(--fh);font-size:11px;color:var(--text);outline:none;transition:border-color .12s;}
+.search-wrap input:focus{border-color:rgba(255,255,255,.18);}
+.search-wrap input::placeholder{color:var(--muted);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.3;pointer-events:none;}
+.btn-add{padding:7px 16px;background:var(--terra);border:none;border-radius:5px;color:#fff;font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:.1em;cursor:pointer;white-space:nowrap;transition:opacity .12s;}
+.btn-add:hover{opacity:.85;}
+
+/* LISTA */
+.list-scroll{flex:1;overflow-y:auto;padding:8px 0;}
+.list-empty{padding:48px 24px;text-align:center;color:var(--muted);font-size:12px;line-height:1.8;}
+
+/* OC ROW */
+.oc-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative;}
+.oc-row:hover{background:rgba(255,255,255,.025);}
+.oc-row.selected{background:rgba(193,100,82,.04);}
+.oc-row.selected::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--terra);}
+.oc-thumb{width:56px;height:56px;border-radius:5px;object-fit:cover;background:#1a1a1a;flex-shrink:0;border:1px solid var(--border);}
+.oc-thumb-ph{width:56px;height:56px;border-radius:5px;background:#1a1a1a;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.3;}
+.oc-body{flex:1;min-width:0;}
+.oc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.oc-modelo{font-size:12px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.oc-status{font-size:7px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:3px 8px;border-radius:2px;flex-shrink:0;}
+.oc-status.pendiente{background:rgba(245,200,66,.1);color:var(--yellow);border:1px solid rgba(245,200,66,.2);}
+.oc-status.en-transito{background:rgba(91,156,246,.1);color:var(--blue);border:1px solid rgba(91,156,246,.2);}
+.oc-status.recibido{background:rgba(62,207,142,.1);color:var(--green);border:1px solid rgba(62,207,142,.2);}
+.oc-status.cancelado{background:rgba(242,107,107,.1);color:var(--red);border:1px solid rgba(242,107,107,.2);}
+.oc-meta{display:flex;align-items:center;gap:10px;font-size:10px;color:var(--muted);}
+.oc-meta strong{color:var(--sub);}
+.oc-total{font-size:10px;font-weight:700;color:var(--terra);margin-left:auto;}
+
+/* OC DETAIL IMAGE */
+.oc-detail-img{width:100%;max-height:340px;object-fit:contain;border-radius:8px;background:#111;border:1px solid var(--border);margin-bottom:20px;}
+
+/* CURVA ROW */
+.curva-row{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative;}
+.curva-row:hover{background:rgba(255,255,255,.025);}
+.curva-row.selected{background:rgba(193,100,82,.04);}
+.curva-row.selected::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--terra);}
+.curva-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.curva-nombre{font-size:13px;font-weight:900;color:#fff;}
+.curva-total{font-size:10px;color:var(--terra);font-weight:700;}
+.mini-bars{display:flex;align-items:flex-end;gap:2px;height:22px;}
+.mini-bar{min-width:6px;border-radius:1px 1px 0 0;background:var(--terra);opacity:.6;}
+
+/* ── PANEL DERECHO (detalle/form) ── */
+.detail-panel{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+.detail-scroll{flex:1;overflow-y:auto;padding:24px;}
+.detail-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:10px;}
+.detail-empty-icon{font-size:40px;opacity:.15;}
+.detail-empty-txt{font-size:11px;letter-spacing:.06em;}
+
+/* FORM */
+.form-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:20px;letter-spacing:-.02em;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-grid.full{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700;}
+.field input,.field select,.field textarea{background:#111;border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-family:var(--fh);font-size:12px;color:var(--text);outline:none;transition:border-color .12s;width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(255,255,255,.2);}
+.field select option{background:#111;}
+.field textarea{resize:vertical;min-height:64px;}
+
+/* Curva tallas */
+.sizes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px;margin-top:4px;}
+.size-cell{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.size-lbl{font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.1em;}
+.size-input{width:100%;background:#111;border:1px solid var(--border);border-radius:4px;padding:6px 4px;font-family:var(--fh);font-size:13px;font-weight:700;color:#fff;text-align:center;outline:none;transition:border-color .12s;}
+.size-input:focus{border-color:var(--terra);}
+
+/* Curva bars preview */
+.curva-preview{margin-top:16px;padding:16px;background:var(--card);border-radius:6px;border:1px solid var(--border);}
+.curva-preview-title{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px;}
+.preview-bars{display:flex;align-items:flex-end;gap:4px;height:80px;}
+.preview-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;}
+.preview-bar{width:100%;border-radius:2px 2px 0 0;background:var(--terra);opacity:.75;min-height:3px;}
+.preview-bar-lbl{font-size:7px;color:var(--muted);font-weight:700;letter-spacing:.04em;}
+.preview-bar-val{font-size:7px;color:var(--terra);font-weight:700;white-space:nowrap;}
+
+/* Curva en OC */
+.curva-picker{display:flex;align-items:center;gap:8px;}
+.curva-picker select{flex:1;}
+.curva-detail-inline{margin-top:8px;padding:10px;background:var(--card);border-radius:5px;border:1px solid var(--border);}
+.curva-inline-bars{display:flex;align-items:flex-end;gap:3px;height:40px;margin-top:8px;}
+
+/* Form actions */
+.form-actions{display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.btn-save{padding:10px 24px;background:var(--terra);border:none;border-radius:5px;color:#fff;font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:opacity .12s;}
+.btn-save:hover{opacity:.85;}
+.btn-ghost{padding:10px 18px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:all .12s;}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--sub);}
+.btn-del{padding:10px 14px;background:rgba(242,107,107,.07);border:1px solid rgba(242,107,107,.15);border-radius:5px;color:var(--red);font-family:var(--fh);font-size:11px;font-weight:700;cursor:pointer;transition:all .12s;margin-left:auto;}
+.btn-del:hover{background:rgba(242,107,107,.12);}
+
+/* OC detalle readonly */
+.oc-detail-section{margin-bottom:20px;}
+.oc-detail-title{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px;}
+.oc-detail-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.oc-detail-key{color:var(--muted);}
+.oc-detail-val{font-weight:700;color:#fff;}
+
+/* Totales curva */
+.curva-totals{display:flex;gap:16px;margin-top:12px;}
+.curva-total-chip{flex:1;text-align:center;padding:8px;background:var(--card);border-radius:5px;border:1px solid var(--border);}
+.curva-total-chip .val{font-size:20px;font-weight:900;color:#fff;}
+.curva-total-chip .lbl{font-size:8px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:2px;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px;}
+
+@media(max-width:860px){
+  body{overflow:auto;}
+  .main{flex-direction:column;}
+  .list-panel{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:50vh;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="logo">BDG<span>·</span>HQ</div>
+    <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);">OC y Curvas</div>
+  </div>
+  <a class="back" href="/">← HQ</a>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tabOC" onclick="switchTab('oc')">
+    Órdenes de Compra
+    <span class="tab-count" id="countOC">0</span>
+  </div>
+  <div class="tab" id="tabCurvas" onclick="switchTab('curvas')">
+    Curvas de Tallas
+    <span class="tab-count" id="countCurvas">0</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- LISTA -->
+  <div class="list-panel">
+    <div class="panel-toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="searchInput" placeholder="Buscar…" oninput="renderList()"/>
+      </div>
+      <button class="btn-add" id="btnAdd" onclick="newItem()">+ Agregar</button>
+    </div>
+    <div class="list-scroll" id="listScroll">
+      <div class="list-empty">Cargando…</div>
+    </div>
+  </div>
+
+  <!-- DETALLE / FORM -->
+  <div class="detail-panel">
+    <div class="detail-scroll" id="detailPanel">
+      <div class="detail-empty">
+        <div class="detail-empty-icon">📋</div>
+        <div class="detail-empty-txt">Selecciona o crea un elemento</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ─── Firebase ───────────────────────────────────────────────────── */
+const FB_BASE = 'https://bdg-horarios-default-rtdb.firebaseio.com/bdg_horarios_v2/oc_curvas';
+
+async function fbGet(path){
+  const r = await fetch(`${FB_BASE}/${path}.json`);
+  const d = await r.json();
+  if(!d) return {};
+  return Object.fromEntries(Object.entries(d).map(([k,v])=>[k,{...v,_id:k}]));
+}
+async function fbPush(path, data){
+  const r = await fetch(`${FB_BASE}/${path}.json`, {method:'POST',body:JSON.stringify(data)});
+  return (await r.json()).name;
+}
+async function fbSet(path, data){
+  await fetch(`${FB_BASE}/${path}.json`, {method:'PUT',body:JSON.stringify(data)});
+}
+async function fbDel(path){
+  await fetch(`${FB_BASE}/${path}.json`, {method:'DELETE'});
+}
+
+/* ─── State ──────────────────────────────────────────────────────── */
+let _tab       = 'oc';   // 'oc' | 'curvas'
+let _ocs       = {};
+let _curvas    = {};
+let _selected  = null;   // id of selected row
+let _editing   = false;  // is form open
+
+const SIZES = ['22','22.5','23','23.5','24','24.5','25','25.5','26','26.5','27','27.5','28'];
+
+/* ─── Init ───────────────────────────────────────────────────────── */
+async function init(){
+  const [ocs, curvas] = await Promise.all([fbGet('ocs'), fbGet('curvas')]);
+  _ocs    = ocs;
+  _curvas = curvas;
+  renderList();
+}
+init();
+
+/* ─── Tabs ───────────────────────────────────────────────────────── */
+function switchTab(tab){
+  _tab      = tab;
+  _selected = null;
+  _editing  = false;
+  document.getElementById('tabOC').classList.toggle('active', tab==='oc');
+  document.getElementById('tabCurvas').classList.toggle('active', tab==='curvas');
+  renderList();
+  showEmpty();
+}
+
+/* ─── Render lista ───────────────────────────────────────────────── */
+function renderList(){
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  const el = document.getElementById('listScroll');
+
+  if(_tab === 'oc'){
+    const items = Object.values(_ocs).filter(o =>
+      !q || o.modelo?.toLowerCase().includes(q) || o.proveedor?.toLowerCase().includes(q)
+    ).sort((a,b)=> (b.fecha_creacion||0) - (a.fecha_creacion||0));
+    document.getElementById('countOC').textContent = Object.keys(_ocs).length;
+    if(!items.length){ el.innerHTML = `<div class="list-empty">Sin órdenes.<br>Usa "+ Agregar" para crear una.</div>`; return; }
+    el.innerHTML = items.map(o => `
+      <div class="oc-row${_selected===o._id?' selected':''}" onclick="selectItem('${o._id}')">
+        ${o.img
+          ? `<img class="oc-thumb" src="${o.img}" loading="lazy" onerror="this.outerHTML='<div class=\\'oc-thumb-ph\\'>👟</div>'">`
+          : `<div class="oc-thumb-ph">👟</div>`}
+        <div class="oc-body">
+          <div class="oc-top">
+            <div class="oc-modelo">${o.modelo||'Sin nombre'}</div>
+            <div class="oc-status ${(o.status||'pendiente').replace(' ','-')}">${o.status||'Pendiente'}</div>
+          </div>
+          <div class="oc-meta">
+            <span>${o.proveedor||'—'}</span>
+            ${o.fecha_entrega ? `<span>· ${fmtDate(o.fecha_entrega)}</span>` : ''}
+            <span class="oc-total">${totalOC(o)} pares</span>
+          </div>
+        </div>
+      </div>`).join('');
+  } else {
+    const items = Object.values(_curvas).filter(c =>
+      !q || c.nombre?.toLowerCase().includes(q)
+    ).sort((a,b)=> (b.fecha_creacion||0) - (a.fecha_creacion||0));
+    document.getElementById('countCurvas').textContent = Object.keys(_curvas).length;
+    if(!items.length){ el.innerHTML = `<div class="list-empty">Sin curvas.<br>Usa "+ Agregar" para crear una.</div>`; return; }
+    el.innerHTML = items.map(c => {
+      const total  = curvaTotal(c);
+      const active = SIZES.filter(s=>(c.tallas?.[s]||0)>0);
+      const dSizes = active.length ? active : SIZES;
+      const max    = Math.max(1,...dSizes.map(s=>c.tallas?.[s]||0));
+      const bars   = dSizes.map(s=>{
+        const v = c.tallas?.[s]||0;
+        const h = Math.max(2,Math.round(v/max*22));
+        return `<div class="mini-bar" style="height:${h}px;" title="${s}: ${v}"></div>`;
+      }).join('');
+      const meta = [];
+      if(c.total_ordenes) meta.push(`${c.total_ordenes.toLocaleString()} órdenes`);
+      if(c.fuente) meta.push(c.fuente);
+      return `
+        <div class="curva-row${_selected===c._id?' selected':''}" onclick="selectItem('${c._id}')">
+          <div class="curva-top">
+            <div class="curva-nombre">${c.nombre||'Sin nombre'}</div>
+            <div class="curva-total">${total.toLocaleString()} pares</div>
+          </div>
+          ${meta.length ? `<div style="font-size:9px;color:var(--muted);margin-bottom:5px;">${meta.join(' · ')}</div>` : ''}
+          <div class="mini-bars">${bars}</div>
+        </div>`;
+    }).join('');
+  }
+}
+
+/* ─── Select ─────────────────────────────────────────────────────── */
+function selectItem(id){
+  _selected = id;
+  _editing  = false;
+  renderList();
+  if(_tab === 'oc') renderOCDetail(_ocs[id]);
+  else              renderCurvaDetail(_curvas[id]);
+}
+
+/* ─── New ────────────────────────────────────────────────────────── */
+function newItem(){
+  _selected = null;
+  _editing  = true;
+  if(_tab === 'oc') renderOCForm(null);
+  else              renderCurvaForm(null);
+}
+
+function showEmpty(){
+  document.getElementById('detailPanel').innerHTML = `
+    <div class="detail-empty">
+      <div class="detail-empty-icon">${_tab==='oc'?'📋':'📐'}</div>
+      <div class="detail-empty-txt">Selecciona o crea un elemento</div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   OC
+═══════════════════════════════════════════════════════════════════ */
+function totalOC(oc){
+  if(!oc.curva_id || !_curvas[oc.curva_id]) return 0;
+  const mult = parseInt(oc.multiplicador)||1;
+  return curvaTotal(_curvas[oc.curva_id]) * mult;
+}
+
+function renderOCDetail(oc){
+  const curva = _curvas[oc.curva_id];
+  const tot   = totalOC(oc);
+  document.getElementById('detailPanel').innerHTML = `
+    ${oc.img ? `<img class="oc-detail-img" src="${oc.img}" alt="${oc.modelo}">` : ''}
+    <div class="form-title">${oc.modelo||'Sin nombre'}</div>
+    <div class="oc-detail-section">
+      <div class="oc-detail-title">Información general</div>
+      <div class="oc-detail-row"><span class="oc-detail-key">Proveedor</span><span class="oc-detail-val">${oc.proveedor||'—'}</span></div>
+      <div class="oc-detail-row"><span class="oc-detail-key">Status</span>
+        <span class="oc-status ${(oc.status||'pendiente').replace(' ','-')}">${oc.status||'Pendiente'}</span>
+      </div>
+      <div class="oc-detail-row"><span class="oc-detail-key">Fecha entrega</span><span class="oc-detail-val">${oc.fecha_entrega ? fmtDate(oc.fecha_entrega) : '—'}</span></div>
+      <div class="oc-detail-row"><span class="oc-detail-key">Multiplicador</span><span class="oc-detail-val">×${oc.multiplicador||1}</span></div>
+      <div class="oc-detail-row"><span class="oc-detail-key">Total pares</span><span class="oc-detail-val" style="color:var(--terra)">${tot}</span></div>
+      ${oc.notas ? `<div class="oc-detail-row" style="flex-direction:column;gap:6px;align-items:flex-start;">
+        <span class="oc-detail-key">Notas</span>
+        <span style="font-size:12px;color:var(--sub);line-height:1.6;">${oc.notas}</span>
+      </div>` : ''}
+    </div>
+    ${curva ? `
+    <div class="oc-detail-section">
+      <div class="oc-detail-title">Curva · ${curva.nombre}</div>
+      ${renderCurvaPreviewHTML(curva, oc.multiplicador||1)}
+    </div>` : ''}
+    <div class="form-actions">
+      <button class="btn-save" onclick="renderOCForm(_ocs['${oc._id}'])">✎ Editar</button>
+      <button class="btn-del" onclick="deleteItem('${oc._id}')">Eliminar</button>
+    </div>`;
+}
+
+function renderOCForm(oc){
+  const isNew = !oc;
+  const curvaOptions = Object.values(_curvas).map(c =>
+    `<option value="${c._id}" ${oc?.curva_id===c._id?'selected':''}>${c.nombre}</option>`
+  ).join('');
+
+  document.getElementById('detailPanel').innerHTML = `
+    <div class="form-title">${isNew ? 'Nueva OC' : 'Editar OC'}</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Modelo / Referencia</label>
+        <input type="text" id="fModelo" value="${oc?.modelo||''}" placeholder="Ej: PENNY CAMEL"/>
+      </div>
+      <div class="field">
+        <label>Proveedor</label>
+        <input type="text" id="fProveedor" value="${oc?.proveedor||''}" placeholder="Ej: Taller Los Ángeles"/>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Status</label>
+        <select id="fStatus">
+          ${['Pendiente','En tránsito','Recibido','Cancelado'].map(s =>
+            `<option value="${s}" ${(oc?.status||'Pendiente')===s?'selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Fecha de entrega</label>
+        <input type="date" id="fFechaEntrega" value="${oc?.fecha_entrega||''}"/>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Curva de tallas</label>
+        <select id="fCurva" onchange="updateCurvaInline()">
+          <option value="">— Sin curva —</option>
+          ${curvaOptions}
+        </select>
+      </div>
+      <div class="field">
+        <label>Multiplicador (corridas)</label>
+        <input type="number" id="fMult" value="${oc?.multiplicador||1}" min="1" max="999" oninput="updateCurvaInline()"/>
+      </div>
+    </div>
+    <div id="curvaInline"></div>
+    <div class="form-grid full" style="margin-top:8px;">
+      <div class="field">
+        <label>Notas</label>
+        <textarea id="fNotas" placeholder="Detalles adicionales, especificaciones…">${oc?.notas||''}</textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-save" onclick="saveOC('${oc?._id||''}')">Guardar</button>
+      <button class="btn-ghost" onclick="cancelForm()">Cancelar</button>
+      ${oc ? `<button class="btn-del" onclick="deleteItem('${oc._id}')">Eliminar</button>` : ''}
+    </div>`;
+  updateCurvaInline();
+}
+
+function updateCurvaInline(){
+  const sel   = document.getElementById('fCurva')?.value;
+  const mult  = parseInt(document.getElementById('fMult')?.value)||1;
+  const el    = document.getElementById('curvaInline');
+  if(!el) return;
+  if(!sel || !_curvas[sel]){ el.innerHTML=''; return; }
+  const curva = _curvas[sel];
+  el.innerHTML = `
+    <div class="curva-detail-inline">
+      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;">${curva.nombre} × ${mult} = ${curvaTotal(curva)*mult} pares</div>
+      ${renderCurvaPreviewHTML(curva, mult)}
+    </div>`;
+}
+
+async function saveOC(id){
+  const data = {
+    modelo:        document.getElementById('fModelo').value.trim(),
+    proveedor:     document.getElementById('fProveedor').value.trim(),
+    status:        document.getElementById('fStatus').value,
+    fecha_entrega: document.getElementById('fFechaEntrega').value,
+    curva_id:      document.getElementById('fCurva').value,
+    multiplicador: parseInt(document.getElementById('fMult').value)||1,
+    notas:         document.getElementById('fNotas').value.trim(),
+    fecha_creacion: id ? (_ocs[id]?.fecha_creacion || Date.now()) : Date.now(),
+    updated:        Date.now(),
+  };
+  if(!data.modelo){ alert('El modelo es obligatorio.'); return; }
+
+  if(id){
+    await fbSet(`ocs/${id}`, data);
+    _ocs[id] = {...data, _id:id};
+  } else {
+    const newId = await fbPush('ocs', data);
+    _ocs[newId] = {...data, _id:newId};
+    _selected = newId;
+  }
+  _editing = false;
+  renderList();
+  renderOCDetail(_ocs[_selected]);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CURVAS
+═══════════════════════════════════════════════════════════════════ */
+function curvaTotal(c, mult=1){
+  return SIZES.reduce((s,sz)=>s+(parseInt(c.tallas?.[sz])||0),0) * mult;
+}
+
+function renderCurvaPreviewHTML(curva, mult=1){
+  const vals = SIZES.map(s=>( parseInt(curva.tallas?.[s])||0 ) * mult);
+  const max  = Math.max(1,...vals);
+  const bars = SIZES.map((s,i)=>{
+    const h = Math.max(3, Math.round(vals[i]/max*80));
+    return `<div class="preview-bar-wrap" title="${s}: ${vals[i]} pares">
+      <div class="preview-bar" style="height:${h}%;"></div>
+      <div class="preview-bar-lbl">${s}</div>
+    </div>`;
+  }).join('');
+  const total = vals.reduce((a,b)=>a+b,0);
+  return `
+    <div class="preview-bars" style="height:60px;margin-top:10px;">${bars}</div>
+    <div style="font-size:9px;color:var(--muted);margin-top:6px;">${total} pares totales${mult>1?` (×${mult})`:''}.</div>`;
+}
+
+function renderCurvaDetail(curva){
+  const active = SIZES.filter(s=>(parseInt(curva.tallas?.[s])||0)>0);
+  const dSizes = active.length ? active : SIZES;
+  const vals   = dSizes.map(s=>parseInt(curva.tallas?.[s])||0);
+  const total  = vals.reduce((a,b)=>a+b,0);
+  const max    = Math.max(1,...vals);
+  const pctMap = curva.pct || {};
+  const hasPct = Object.keys(pctMap).length > 0;
+
+  const chips = [];
+  if(curva.total_unidades) chips.push(`${Number(curva.total_unidades).toLocaleString()} unidades históricas`);
+  if(curva.total_ordenes)  chips.push(`${Number(curva.total_ordenes).toLocaleString()} órdenes`);
+  if(curva.fuente)         chips.push(curva.fuente);
+
+  document.getElementById('detailPanel').innerHTML = `
+    <div class="form-title">${curva.nombre||'Sin nombre'}</div>
+    <div class="curva-totals">
+      <div class="curva-total-chip"><div class="val" style="color:var(--terra)">${total.toLocaleString()}</div><div class="lbl">pares por corrida</div></div>
+      <div class="curva-total-chip"><div class="val">${dSizes.length}</div><div class="lbl">tallas activas</div></div>
+    </div>
+    ${chips.length ? `<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+      ${chips.map(c=>`<span style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:3px;padding:3px 9px;">${c}</span>`).join('')}
+    </div>` : ''}
+    <div class="curva-preview" style="margin-top:16px;">
+      <div class="curva-preview-title">Distribución de tallas</div>
+      <div class="preview-bars" style="height:100px;margin-top:10px;">
+        ${dSizes.map((s,i)=>{
+          const v   = vals[i];
+          const h   = Math.max(3,Math.round(v/max*100));
+          const pct = hasPct ? (pctMap[s]||0) : (total>0 ? v/total*100 : 0);
+          return `<div class="preview-bar-wrap" title="${s}: ${v.toLocaleString()} — ${pct.toFixed(1)}%">
+            <div class="preview-bar-val">${pct.toFixed(1)}%</div>
+            <div class="preview-bar" style="height:${h}%;"></div>
+            <div class="preview-bar-lbl">${s}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    ${curva.notas ? `<div style="margin-top:14px;font-size:11px;color:var(--muted);line-height:1.7;">${curva.notas}</div>` : ''}
+    <div class="form-actions">
+      <button class="btn-save" onclick="renderCurvaForm(_curvas['${curva._id}'])">✎ Editar</button>
+      <button class="btn-del" onclick="deleteItem('${curva._id}')">Eliminar</button>
+    </div>`;
+}
+
+function renderCurvaForm(curva){
+  const isNew = !curva;
+  const cells = SIZES.map(s => `
+    <div class="size-cell">
+      <div class="size-lbl">${s}</div>
+      <input class="size-input" type="number" min="0" max="999"
+        id="sz_${s.replace('.','_')}"
+        value="${curva?.tallas?.[s]||0}"
+        oninput="updatePreview()"/>
+    </div>`).join('');
+
+  document.getElementById('detailPanel').innerHTML = `
+    <div class="form-title">${isNew ? 'Nueva Curva' : 'Editar Curva'}</div>
+    <div class="form-grid" style="margin-bottom:18px;">
+      <div class="field">
+        <label>Nombre de la curva</label>
+        <input type="text" id="fNombre" value="${curva?.nombre||''}" placeholder="Ej: Curva estándar / Curva punta fina"/>
+      </div>
+      <div class="field">
+        <label>Notas</label>
+        <input type="text" id="fNombreNota" value="${curva?.notas||''}" placeholder="Referencia o descripción breve"/>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:6px;">
+      <label>Tallas y cantidades (pares por corrida)</label>
+      <div class="sizes-grid" style="margin-top:8px;">${cells}</div>
+    </div>
+    <div id="curvaPreview" class="curva-preview">
+      <div class="curva-preview-title">Vista previa</div>
+      <div class="preview-bars" id="previewBars"></div>
+      <div id="previewTotal" style="font-size:9px;color:var(--muted);margin-top:6px;"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-save" onclick="saveCurva('${curva?._id||''}')">Guardar</button>
+      <button class="btn-ghost" onclick="cancelForm()">Cancelar</button>
+      ${curva ? `<button class="btn-del" onclick="deleteItem('${curva._id}')">Eliminar</button>` : ''}
+    </div>`;
+  updatePreview();
+}
+
+function updatePreview(){
+  const vals = SIZES.map(s=>parseInt(document.getElementById(`sz_${s.replace('.','_')}`)?.value)||0);
+  const max  = Math.max(1,...vals);
+  const total= vals.reduce((a,b)=>a+b,0);
+  const bars = SIZES.map((s,i)=>{
+    const h = Math.max(3,Math.round(vals[i]/max*100));
+    return `<div class="preview-bar-wrap" title="${s}: ${vals[i]} pares">
+      <div class="preview-bar-val" style="font-size:8px;color:var(--sub);font-weight:700;">${vals[i]||''}</div>
+      <div class="preview-bar" style="height:${h}%;"></div>
+      <div class="preview-bar-lbl">${s}</div>
+    </div>`;
+  }).join('');
+  const bEl = document.getElementById('previewBars');
+  const tEl = document.getElementById('previewTotal');
+  if(bEl) bEl.innerHTML = bars;
+  if(tEl) tEl.textContent = `${total} pares totales por corrida.`;
+}
+
+async function saveCurva(id){
+  const nombre = document.getElementById('fNombre').value.trim();
+  if(!nombre){ alert('El nombre es obligatorio.'); return; }
+  const tallas = {};
+  SIZES.forEach(s=>{
+    const v = parseInt(document.getElementById(`sz_${s.replace('.','_')}`)?.value)||0;
+    if(v>0) tallas[s] = v;
+  });
+  const data = {
+    nombre,
+    notas:         document.getElementById('fNombreNota').value.trim(),
+    tallas,
+    fecha_creacion: id ? (_curvas[id]?.fecha_creacion || Date.now()) : Date.now(),
+    updated:        Date.now(),
+  };
+  if(id){
+    await fbSet(`curvas/${id}`, data);
+    _curvas[id] = {...data, _id:id};
+  } else {
+    const newId = await fbPush('curvas', data);
+    _curvas[newId] = {...data, _id:newId};
+    _selected = newId;
+  }
+  _editing = false;
+  renderList();
+  renderCurvaDetail(_curvas[_selected]);
+}
+
+/* ─── Delete ─────────────────────────────────────────────────────── */
+async function deleteItem(id){
+  if(!confirm('¿Eliminar este elemento?')) return;
+  if(_tab === 'oc'){
+    await fbDel(`ocs/${id}`);
+    delete _ocs[id];
+  } else {
+    await fbDel(`curvas/${id}`);
+    delete _curvas[id];
+  }
+  _selected = null;
+  renderList();
+  showEmpty();
+}
+
+function cancelForm(){
+  if(_selected){
+    if(_tab==='oc') renderOCDetail(_ocs[_selected]);
+    else            renderCurvaDetail(_curvas[_selected]);
+  } else {
+    showEmpty();
+  }
+}
+
+/* ─── Utils ──────────────────────────────────────────────────────── */
+function fmtDate(d){
+  if(!d) return '—';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+</script>
+</body>
+</html>
