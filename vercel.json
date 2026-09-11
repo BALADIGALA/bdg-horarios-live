@@ -1,23 +1,229 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
-    { "path": "/api/remind",        "schedule": "0 14 * * *" },
-    { "path": "/api/restock?action=cron",  "schedule": "0 11 * * *" }
+    {
+      "path": "/api/remind",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/restock?action=cron",
+      "schedule": "0 11 * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/live",
+      "destination": "/venta/vivo",
+      "permanent": true
+    },
+    {
+      "source": "/live/:path*",
+      "destination": "/venta/vivo/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/pulse",
+      "destination": "/venta/pulso",
+      "permanent": true
+    },
+    {
+      "source": "/pulse/:path*",
+      "destination": "/venta/pulso/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/metas",
+      "destination": "/venta/metas",
+      "permanent": true
+    },
+    {
+      "source": "/metas/:path*",
+      "destination": "/venta/metas/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/meta",
+      "destination": "/venta/metas",
+      "permanent": true
+    },
+    {
+      "source": "/meta/:path*",
+      "destination": "/venta/metas/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/50m",
+      "destination": "/venta/anual",
+      "permanent": true
+    },
+    {
+      "source": "/50m/:path*",
+      "destination": "/venta/anual/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/inventario",
+      "destination": "/stock/inventario",
+      "permanent": true
+    },
+    {
+      "source": "/inventario/:path*",
+      "destination": "/stock/inventario/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/restock",
+      "destination": "/stock/restock",
+      "permanent": true
+    },
+    {
+      "source": "/restock/:path*",
+      "destination": "/stock/restock/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/oc",
+      "destination": "/stock/ordenes",
+      "permanent": true
+    },
+    {
+      "source": "/oc/:path*",
+      "destination": "/stock/ordenes/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/curvas",
+      "destination": "/stock/curvas",
+      "permanent": true
+    },
+    {
+      "source": "/curvas/:path*",
+      "destination": "/stock/curvas/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/tiktok",
+      "destination": "/canal/tiktok",
+      "permanent": true
+    },
+    {
+      "source": "/tiktok/:path*",
+      "destination": "/canal/tiktok/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/pdh",
+      "destination": "/canal/palacio/inventario",
+      "permanent": true
+    },
+    {
+      "source": "/pdh/:path*",
+      "destination": "/canal/palacio/inventario/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/catalogo",
+      "destination": "/canal/palacio/catalogo",
+      "permanent": true
+    },
+    {
+      "source": "/catalogo/:path*",
+      "destination": "/canal/palacio/catalogo/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/penny",
+      "destination": "/diseno/penny",
+      "permanent": true
+    },
+    {
+      "source": "/penny/:path*",
+      "destination": "/diseno/penny/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/logistica",
+      "destination": "/op/logistica",
+      "permanent": true
+    },
+    {
+      "source": "/logistica/:path*",
+      "destination": "/op/logistica/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/login",
+      "destination": "/cuenta/entrar",
+      "permanent": true
+    },
+    {
+      "source": "/login/:path*",
+      "destination": "/cuenta/entrar/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/register",
+      "destination": "/cuenta/registro",
+      "permanent": true
+    },
+    {
+      "source": "/register/:path*",
+      "destination": "/cuenta/registro/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/perfil",
+      "destination": "/cuenta/perfil",
+      "permanent": true
+    },
+    {
+      "source": "/perfil/:path*",
+      "destination": "/cuenta/perfil/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/admin",
+      "destination": "/cuenta/admin",
+      "permanent": true
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/cuenta/admin/:path*",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/favicon.ico", "destination": "/public/favicon.ico" },
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/50m(.*)", "destination": "/public/50m/index.html" },
-    { "source": "/tiktok(.*)", "destination": "/public/tiktok/index.html" },
-    { "source": "/pulse(.*)", "destination": "/public/pulse/index.html" },
-    { "source": "/inventario(.*)", "destination": "/public/inventario/index.html" },
-    { "source": "/restock(.*)", "destination": "/public/restock/index.html" },
-    { "source": "/catalogo(.*)", "destination": "/public/catalogo/index.html" },
-    { "source": "/diseno(.*)", "destination": "/public/diseno/index.html" },
-    { "source": "/live(.*)",  "destination": "/public/live/index.html" },
-    { "source": "/penny(.*)", "destination": "/public/penny/index.html" },
-    { "source": "/oc(.*)", "destination": "/public/oc/index.html" },
-    { "source": "/meta(.*)", "destination": "/public/meta/index.html" },
-    { "source": "/curvas(.*)", "destination": "/public/curvas/index.html" },
-    { "source": "/(.*)", "destination": "/public/index.html" }
+    {
+      "source": "/api/shopify/inventario",
+      "destination": "/api/inventory"
+    },
+    {
+      "source": "/api/shopify/ordenes",
+      "destination": "/api/orders"
+    },
+    {
+      "source": "/api/shopify/canales",
+      "destination": "/api/channels"
+    },
+    {
+      "source": "/api/shopify/fulfillment",
+      "destination": "/api/fulfillment"
+    },
+    {
+      "source": "/api/shopify/imagenes",
+      "destination": "/api/images"
+    },
+    {
+      "source": "/api/shopify/catalogo",
+      "destination": "/api/shopify"
+    },
+    {
+      "source": "/api/meta/vivo",
+      "destination": "/api/live"
+    },
+    {
+      "source": "/api/stock/restock",
+      "destination": "/api/restock"
+    }
   ]
 }
